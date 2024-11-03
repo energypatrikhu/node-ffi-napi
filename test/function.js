@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const ref = require('@2060.io/ref-napi');
+const ref = require('@energypatrikhu/ref-napi');
 const ffi = require('../');
 const bindings = require('node-gyp-build')(__dirname);
 
@@ -24,12 +24,12 @@ describe('Function "type"', function () {
   });
 
   it('should be accepted as an argument "type" to a ForeignFunction', function () {
-    ffi.ForeignFunction(ref.NULL, 'void', [ voidFn ])
+    ffi.ForeignFunction(ref.NULL, 'void', [voidFn]);
   });
 
   it('should work as expected using the "callback_func" static bindings', function () {
-    const fn = ffi.Function('int', [ 'int' ]);
-    const callback_func = ffi.ForeignFunction(bindings.callback_func, fn, [ fn ]);
+    const fn = ffi.Function('int', ['int']);
+    const callback_func = ffi.ForeignFunction(bindings.callback_func, fn, [fn]);
 
     const abs = callback_func(Math.abs);
     assert.strictEqual('function', typeof abs);

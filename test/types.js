@@ -1,12 +1,12 @@
 'use strict';
-const assert = require('assert')
-const ref = require('@2060.io/ref-napi')
-const ffi = require('../')
+const assert = require('assert');
+const ref = require('@energypatrikhu/ref-napi');
+const ffi = require('../');
 
 describe('types', function () {
   describe('`ffi_type` to ref type matchups', function () {
-    Object.keys(ref.types).forEach(name => {
-      it('should match a valid `ffi_type` for "' + name + '"', () =>{
+    Object.keys(ref.types).forEach((name) => {
+      it('should match a valid `ffi_type` for "' + name + '"', () => {
         const type = ref.types[name];
         const ffi_type = ffi.ffiType(type);
         assert(Buffer.isBuffer(ffi_type));

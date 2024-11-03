@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const ref = require('@2060.io/ref-napi');
+const ref = require('@energypatrikhu/ref-napi');
 const ffi = require('../');
 const int = ref.types.int;
 const bindings = require('node-gyp-build')(__dirname);
@@ -9,19 +9,19 @@ describe('Callback', function () {
   afterEach(global.gc);
 
   it('should create a C function pointer from a JS function', function () {
-    const callback = ffi.Callback('void', [ ], function (val) { });
+    const callback = ffi.Callback('void', [], function (val) {});
     assert(Buffer.isBuffer(callback));
   });
 
-  it('should be invokable by an ffi\'d ForeignFunction', function () {
-    const funcPtr = ffi.Callback(int, [ int ], Math.abs);
-    const func = ffi.ForeignFunction(funcPtr, int, [ int ]);
+  it("should be invokable by an ffi'd ForeignFunction", function () {
+    const funcPtr = ffi.Callback(int, [int], Math.abs);
+    const func = ffi.ForeignFunction(funcPtr, int, [int]);
     assert.strictEqual(1234, func(-1234));
   });
 
   it('should work with a "void" return type', function () {
-    const funcPtr = ffi.Callback('void', [ ], function (val) { });
-    const func = ffi.ForeignFunction(funcPtr, 'void', [ ]);
+    const funcPtr = ffi.Callback('void', [], function (val) {});
+    const func = ffi.ForeignFunction(funcPtr, 'void', []);
     assert.strictEqual(null, func());
   });
 
@@ -35,13 +35,13 @@ describe('Callback', function () {
     };
     const voidPtr = ref.refType(voidType);
     let called = false;
-    const cb = ffi.Callback(voidPtr, [ voidPtr ], function (ptr) {
+    const cb = ffi.Callback(voidPtr, [voidPtr], function (ptr) {
       called = true;
       assert.strictEqual(0, ptr.address());
       return ptr;
-    })
+    });
 
-    const fn = ffi.ForeignFunction(cb, voidPtr, [ voidPtr ]);
+    const fn = ffi.ForeignFunction(cb, voidPtr, [voidPtr]);
     assert(!called);
     const nul = fn(ref.NULL);
     assert(called);
@@ -50,22 +50,22 @@ describe('Callback', function () {
   });
 
   it('should throw an Error when invoked through a ForeignFunction and throws', function () {
-    const cb = ffi.Callback('void', [ ], function () {
-      throw new Error('callback threw')
+    const cb = ffi.Callback('void', [], function () {
+      throw new Error('callback threw');
     });
-    const fn = ffi.ForeignFunction(cb, 'void', [ ]);
+    const fn = ffi.ForeignFunction(cb, 'void', []);
     assert.throws(function () {
       fn();
     }, /callback threw/);
   });
 
   it('should throw an Error with a meaningful message when a type\'s "set()" throws', function () {
-    const cb = ffi.Callback('int', [ ], function () {
+    const cb = ffi.Callback('int', [], function () {
       // Changed, because returning string is not failing because of this
       // https://github.com/iojs/io.js/issues/1161
       return 1111111111111111111111;
     });
-    const fn = ffi.ForeignFunction(cb, 'int', [ ]);
+    const fn = ffi.ForeignFunction(cb, 'int', []);
     assert.throws(function () {
       fn();
     }, /error setting return value/);
@@ -73,7 +73,7 @@ describe('Callback', function () {
 
   it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
     return this.skip('this test is inherently broken');
-    let cb = ffi.Callback('void', [ ], function () { });
+    let cb = ffi.Callback('void', [], function () {});
 
     // register the callback function
     bindings.set_cb(cb);
@@ -99,18 +99,18 @@ describe('Callback', function () {
    * See: https://github.com/node-ffi/node-ffi/issues/199
    */
 
-  it("should propagate callbacks and errors back from native threads", function(done) {
+  it('should propagate callbacks and errors back from native threads', function (done) {
     let invokeCount = 0;
-    let cb = ffi.Callback('void', [ ], function () {
+    let cb = ffi.Callback('void', [], function () {
       invokeCount++;
     });
 
-    const kill = (cb => {
+    const kill = ((cb) => {
       // register the callback function
       bindings.set_cb(cb);
       return function () {
         cb = null;
-      }
+      };
     })(cb);
 
     // destroy the outer "cb". now "kill()" holds the "cb" reference
@@ -128,7 +128,7 @@ describe('Callback', function () {
       process.nextTick(finish);
     }, 100);
 
-    function finish () {
+    function finish() {
       return done(); // This test is inherently broken.
       kill();
       global.gc(); // now ensure the inner "cb" Buffer is collected
@@ -158,9 +158,9 @@ describe('Callback', function () {
   });
 
   describe('async', function () {
-    it('should be invokable asynchronously by an ffi\'d ForeignFunction', function (done) {
-      const funcPtr = ffi.Callback(int, [ int ], Math.abs);
-      const func = ffi.ForeignFunction(funcPtr, int, [ int ]);
+    it("should be invokable asynchronously by an ffi'd ForeignFunction", function (done) {
+      const funcPtr = ffi.Callback(int, [int], Math.abs);
+      const func = ffi.ForeignFunction(funcPtr, int, [int]);
       func.async(-9999, function (err, res) {
         assert.strictEqual(null, err);
         assert.strictEqual(9999, res);
@@ -173,15 +173,15 @@ describe('Callback', function () {
      */
 
     it('multiple callback invocations from uv thread pool should be properly synchronized', function (done) {
-      this.timeout(10000)
+      this.timeout(10000);
       let iterations = 30000;
-      let cb = ffi.Callback('string', [ 'string' ], function (val) {
-        if (val === "ping" && --iterations > 0) {
-          return "pong";
+      let cb = ffi.Callback('string', ['string'], function (val) {
+        if (val === 'ping' && --iterations > 0) {
+          return 'pong';
         }
-        return "end";
-      })
-      const pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', [ 'pointer' ]);
+        return 'end';
+      });
+      const pingPongFn = ffi.ForeignFunction(bindings.play_ping_pong, 'void', ['pointer']);
       pingPongFn.async(cb, function (err, ret) {
         assert.strictEqual(iterations, 0);
         done();
@@ -200,7 +200,7 @@ describe('Callback', function () {
 
     it('should work being invoked multiple times', function (done) {
       let invokeCount = 0;
-      let cb = ffi.Callback('void', [ ], function () {
+      let cb = ffi.Callback('void', [], function () {
         invokeCount++;
       });
 
@@ -209,7 +209,7 @@ describe('Callback', function () {
         bindings.set_cb(cb);
         return function () {
           cb = null;
-        }
+        };
       })(cb);
 
       // destroy the outer "cb". now "kill()" holds the "cb" reference
@@ -231,7 +231,7 @@ describe('Callback', function () {
         process.nextTick(finish);
       }, 25);
 
-      function finish () {
+      function finish() {
         return done(); // This test is inherently broken.
         bindings.call_cb();
         assert.strictEqual(4, invokeCount);
@@ -249,10 +249,10 @@ describe('Callback', function () {
 
         done();
       }
-    })
+    });
 
     it('should throw an Error when invoked after the callback gets garbage collected', function (done) {
-      let cb = ffi.Callback('void', [ ], function () { });
+      let cb = ffi.Callback('void', [], function () {});
 
       // register the callback function
       bindings.set_cb(cb);

@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const ref = require('@2060.io/ref-napi');
+const ref = require('@energypatrikhu/ref-napi');
 const Array = require('ref-array-di')(ref);
 const Struct = require('ref-struct-di')(ref);
 const ffi = require('../');
@@ -12,24 +12,24 @@ describe('ForeignFunction', function () {
   // these structs are also defined in ffi_tests.cc
   const box = Struct({
     width: ref.types.int,
-    height: ref.types.int
+    height: ref.types.int,
   });
 
   const arst = Struct({
     num: 'int',
-    array: Array('double', 20)
+    array: Array('double', 20),
   });
 
   it('should call the static "abs" bindings', function () {
     const _abs = bindings.abs;
-    const abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ]);
+    const abs = ffi.ForeignFunction(_abs, 'int', ['int']);
     assert.strictEqual('function', typeof abs);
     assert.strictEqual(1234, abs(-1234));
-  })
+  });
 
-  it('should throw an Error with a meaningful message when type\'s `set()` throws', function () {
+  it("should throw an Error with a meaningful message when type's `set()` throws", function () {
     const _abs = bindings.abs;
-    const abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ]);
+    const abs = ffi.ForeignFunction(_abs, 'int', ['int']);
     assert.throws(function () {
       // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
       abs(11111111111111111111);
@@ -38,14 +38,14 @@ describe('ForeignFunction', function () {
 
   it('should call the static "atoi" bindings', function () {
     const _atoi = bindings.atoi;
-    const atoi = ffi.ForeignFunction(_atoi, 'int', [ 'string' ]);
+    const atoi = ffi.ForeignFunction(_atoi, 'int', ['string']);
     assert.strictEqual('function', typeof atoi);
     assert.strictEqual(1234, atoi('1234'));
   });
 
   it('should call the static "double_box" bindings', function () {
-    const double_box = ffi.ForeignFunction(bindings.double_box, box, [ box ]);
-    const b = new box;
+    const double_box = ffi.ForeignFunction(bindings.double_box, box, [box]);
+    const b = new box();
     assert(b instanceof box);
     b.width = 4;
     b.height = 5;
@@ -62,8 +62,8 @@ describe('ForeignFunction', function () {
 
   it('should call the static "double_box_ptr" bindings', function () {
     const boxPtr = ref.refType(box);
-    const double_box_ptr = ffi.ForeignFunction(bindings.double_box_ptr, box, [ boxPtr ]);
-    const b = new box;
+    const double_box_ptr = ffi.ForeignFunction(bindings.double_box_ptr, box, [boxPtr]);
+    const b = new box();
     b.width = 4;
     b.height = 5;
     const out = double_box_ptr(b.ref());
@@ -78,7 +78,7 @@ describe('ForeignFunction', function () {
   });
 
   it('should call the static "area_box" bindings', function () {
-    const area_box = ffi.ForeignFunction(bindings.area_box, ref.types.int, [ box ]);
+    const area_box = ffi.ForeignFunction(bindings.area_box, ref.types.int, [box]);
     const b = new box({ width: 5, height: 20 });
     const rtn = area_box(b);
     assert.strictEqual('number', typeof rtn);
@@ -87,7 +87,7 @@ describe('ForeignFunction', function () {
 
   it('should call the static "area_box_ptr" bindings', function () {
     const boxPtr = ref.refType(box);
-    const area_box = ffi.ForeignFunction(bindings.area_box_ptr, ref.types.int, [ boxPtr ]);
+    const area_box = ffi.ForeignFunction(bindings.area_box_ptr, ref.types.int, [boxPtr]);
     const b = new box({ width: 5, height: 20 });
     const rtn = area_box(b.ref());
     assert.strictEqual('number', typeof rtn);
@@ -95,7 +95,7 @@ describe('ForeignFunction', function () {
   });
 
   it('should call the static "create_box" bindings', function () {
-    const create_box = ffi.ForeignFunction(bindings.create_box, box, [ 'int', 'int' ]);
+    const create_box = ffi.ForeignFunction(bindings.create_box, box, ['int', 'int']);
     const rtn = create_box(1, 2);
     assert(rtn instanceof box);
     assert.strictEqual(1, rtn.width);
@@ -109,7 +109,7 @@ describe('ForeignFunction', function () {
     box.set(boxes, box.size * 1, { width: 2, height: 20 });
     box.set(boxes, box.size * 2, { width: 3, height: 30 });
     const boxPtr = ref.refType(box);
-    const add_boxes = ffi.ForeignFunction(bindings.add_boxes, box, [ boxPtr, 'int' ]);
+    const add_boxes = ffi.ForeignFunction(bindings.add_boxes, box, [boxPtr, 'int']);
     const rtn = add_boxes(boxes, count);
     assert(rtn instanceof box);
     assert.strictEqual(6, rtn.width);
@@ -118,8 +118,8 @@ describe('ForeignFunction', function () {
 
   it('should call the static "int_array" bindings', function () {
     const IntArray = Array('int');
-    const int_array = ffi.ForeignFunction(bindings.int_array, IntArray, [ IntArray ]);
-    const array = new IntArray([ 1, 2, 3, 4, 5, -1 ]);
+    const int_array = ffi.ForeignFunction(bindings.int_array, IntArray, [IntArray]);
+    const array = new IntArray([1, 2, 3, 4, 5, -1]);
     const out = int_array(array);
     out.length = array.length;
     assert.strictEqual(2, out[0]);
@@ -131,8 +131,8 @@ describe('ForeignFunction', function () {
   });
 
   it('should call the static "array_in_struct" bindings', function () {
-    const array_in_struct = ffi.ForeignFunction(bindings.array_in_struct, arst, [ arst ]);
-    const a = new arst;
+    const array_in_struct = ffi.ForeignFunction(bindings.array_in_struct, arst, [arst]);
+    const a = new arst();
     assert.strictEqual(20, a.array.length);
     a.num = 69;
     for (let i = 0; i < 20; i++) {
@@ -152,7 +152,7 @@ describe('ForeignFunction', function () {
   // allow a Buffer backing store to be used as a "string" FFI argument
   // https://github.com/node-ffi/node-ffi/issues/169
   it('should call the static "test_169" bindings', function () {
-    const test = ffi.ForeignFunction(bindings.test_169, 'int', [ 'string', 'int' ]);
+    const test = ffi.ForeignFunction(bindings.test_169, 'int', ['string', 'int']);
     const b = new Buffer(20);
     const len = test(b, b.length);
     assert.strictEqual('sample str', b.toString('ascii', 0, len));
@@ -162,19 +162,19 @@ describe('ForeignFunction', function () {
   // https://github.com/TooTallNate/ref/issues/56
   it('should call the static "test_169" bindings', function () {
     const Obj56 = Struct({
-      'traceMode': ref.types.bool
+      traceMode: ref.types.bool,
     });
     const t = new Obj56({ traceMode: true });
     const f = new Obj56({ traceMode: false });
 
-    const test = ffi.ForeignFunction(bindings.test_ref_56, 'int', [ ref.refType(Obj56) ]);
+    const test = ffi.ForeignFunction(bindings.test_ref_56, 'int', [ref.refType(Obj56)]);
 
     assert.strictEqual(1, test(t.ref()));
     assert.strictEqual(0, test(f.ref()));
   });
 
   it('should not call the "ref()" function of its arguments', function () {
-    const void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', [ 'void *' ]);
+    const void_ptr_arg = ffi.ForeignFunction(bindings.abs, 'void *', ['void *']);
     const b = new Buffer(0);
     b.ref = assert.bind(null, 0, '"ref()" should not be called');
     void_ptr_arg(b);
@@ -183,7 +183,7 @@ describe('ForeignFunction', function () {
   describe('async', function () {
     it('should call the static "abs" bindings asynchronously', function (done) {
       const _abs = bindings.abs;
-      const abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ]);
+      const abs = ffi.ForeignFunction(_abs, 'int', ['int']);
       assert.strictEqual('function', typeof abs.async);
 
       // invoke asynchronously
@@ -194,9 +194,9 @@ describe('ForeignFunction', function () {
       });
     });
 
-    it('should invoke the callback with an Error with a meaningful message when type\'s `set()` throws', function (done) {
+    it("should invoke the callback with an Error with a meaningful message when type's `set()` throws", function (done) {
       const _abs = bindings.abs;
-      const abs = ffi.ForeignFunction(_abs, 'int', [ 'int' ]);
+      const abs = ffi.ForeignFunction(_abs, 'int', ['int']);
 
       // Changed, because returning string is not failing because of this; https://github.com/iojs/io.js/issues/1161
       abs.async(1111111111111111111111, function (err, res) {
@@ -205,8 +205,7 @@ describe('ForeignFunction', function () {
           assert(/error setting argument 0/.test(err.message));
           assert.strictEqual('undefined', typeof res);
           done();
-        }
-        catch (e) {
+        } catch (e) {
           done(e);
         }
       });

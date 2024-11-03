@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('assert');
 const path = require('path');
-const ref = require('@2060.io/ref-napi');
+const ref = require('@energypatrikhu/ref-napi');
 const ffi = require('../');
 const fs = require('fs-extra');
 const DynamicLibrary = ffi.DynamicLibrary;
@@ -34,7 +34,7 @@ describe('DynamicLibrary', function () {
       assert.strictEqual(name, symbol.name);
     });
 
-    it('should load libraries when pathname contains unicode characters', function() {
+    it('should load libraries when pathname contains unicode characters', function () {
       // Directory and file names are "I can't read this" and "Or this"
       // translated into Simplified Chinese by Google Translate
       let lib, t;
