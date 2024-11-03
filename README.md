@@ -34,7 +34,7 @@ Example
 -------
 
 ``` js
-var ffi = require('ffi-napi');
+var ffi = require('@energypatrikhu/ffi-napi');
 
 var libm = ffi.Library('libm', {
   'ceil': [ 'double', [ 'double' ] ]
